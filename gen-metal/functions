@@ -3,134 +3,9 @@
 set -eu
 set -o pipefail
 
-# Library of functions for the kayobe development environment.
+PARENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Configuration
-
-function config_defaults {
-    # Set default values for kayobe development configuration.
-
-    PARENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    KAYOBE_SOURCE_PATH_DEFAULT="$(dirname ${PARENT})"
-
-    # Path to the kayobe source code repository. Typically this will be the
-    # Vagrant shared directory.
-    export KAYOBE_SOURCE_PATH="${KAYOBE_SOURCE_PATH:-$KAYOBE_SOURCE_PATH_DEFAULT}"
-
-    # Path to the kayobe-config repository checkout.
-    export KAYOBE_CONFIG_SOURCE_PATH="${KAYOBE_CONFIG_SOURCE_PATH:-${KAYOBE_SOURCE_PATH}/config/src/kayobe-config}"
-
-    # Path to the kayobe virtual environment.
-    export KAYOBE_VENV_PATH="${KAYOBE_VENV_PATH:-${HOME}/kayobe-venv}"
-
-    # Whether to provision a VM for the seed host.
-    export KAYOBE_SEED_VM_PROVISION=${KAYOBE_SEED_VM_PROVISION:-1}
-
-    # Whether to configure the seed host.
-    export KAYOBE_SEED_HOST_CONFIGURE=${KAYOBE_SEED_HOST_CONFIGURE:-1}
-
-    # Whether to build container images for the seed services. If 0, they will
-    # be pulled.
-    export KAYOBE_SEED_CONTAINER_IMAGE_BUILD=${KAYOBE_SEED_CONTAINER_IMAGE_BUILD:-0}
-
-    # Whether to deploy seed services.
-    export KAYOBE_SEED_SERVICE_DEPLOY=${KAYOBE_SEED_SERVICE_DEPLOY:-1}
-
-    # Whether to provision a VM for the infra VM host.
-    export KAYOBE_INFRA_VM_PROVISION=${KAYOBE_INFRA_VM_PROVISION:-1}
-
-    # Whether to configure the infra VM host.
-    export KAYOBE_INFRA_VM_HOST_CONFIGURE=${KAYOBE_INFRA_VM_HOST_CONFIGURE:-1}
-
-    # Whether to deploy infra VM services.
-    export KAYOBE_INFRA_VM_SERVICE_DEPLOY=${KAYOBE_INFRA_VM_SERVICE_DEPLOY:-1}
-
-    # Whether to use the 'kolla-ansible certificates' command to generate X.509
-    # certificates.
-    export KAYOBE_OVERCLOUD_GENERATE_CERTIFICATES=${KAYOBE_OVERCLOUD_GENERATE_CERTIFICATES:-0}
-
-    # Whether to build container images for the overcloud services. If 0, they
-    # will be pulled if $KAYOBE_OVERCLOUD_CONTAINER_IMAGE_PULL is 1.
-    export KAYOBE_OVERCLOUD_CONTAINER_IMAGE_BUILD=${KAYOBE_OVERCLOUD_CONTAINER_IMAGE_BUILD:-0}
-
-    # Whether to pull container images for the overcloud services if
-    # $KAYOBE_OVERCLOUD_CONTAINER_IMAGE_BUILD is 0.
-    export KAYOBE_OVERCLOUD_CONTAINER_IMAGE_PULL=${KAYOBE_OVERCLOUD_CONTAINER_IMAGE_PULL:-1}
-
-    # Whether to deploy overcloud services.
-    export KAYOBE_OVERCLOUD_SERVICE_DEPLOY=${KAYOBE_OVERCLOUD_SERVICE_DEPLOY:-1}
-
-    # Whether to perform overcloud post configuration.
-    export KAYOBE_OVERCLOUD_POST_CONFIGURE=${KAYOBE_OVERCLOUD_POST_CONFIGURE:-1}
-
-    # Additional arguments to pass to kayobe commands.
-    export KAYOBE_EXTRA_ARGS=${KAYOBE_EXTRA_ARGS:-}
-
-    # Use .gitreview as the key to determine the appropriate branch to clone
-    # for tests. Inspired by OSA code.
-    PARENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    if [ -f "${PARENT}/../.gitreview" ]; then
-      BRANCH=$(awk -F'=' '/defaultbranch/ {print $2}' "${PARENT}/../.gitreview")
-      if [[ "${BRANCH}" == "" ]]; then
-        SERIES="master"
-      else
-        SERIES="$(echo ${BRANCH} | sed -E 's,(stable|unmaintained)/,,')"
-      fi
-
-      # Upper constraints to use when installing Python packages.
-      export UPPER_CONSTRAINTS_FILE="${UPPER_CONSTRAINTS_FILE:-https://releases.openstack.org/constraints/upper/${SERIES}}"
-    fi
-
-    # Path to the Tenks virtual environment.
-    export TENKS_VENV_PATH="${TENKS_VENV_PATH:-${HOME}/tenks-test-venv}"
-
-    # Path to a Tenks YAML configuration file. If unset,
-    # tenks-deploy-config-overcloud.yml or tenks-deploy-config-compute.yml will
-    # be used.
-    export TENKS_CONFIG_PATH=${TENKS_CONFIG_PATH:-}
-
-    # Log directory in case of errors
-    export LOGDIR=${LOGDIR:-}
-}
-
-function config_set {
-    # Source the configuration file, config.sh
-
-    PARENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-    source "${PARENT}/config.sh"
-}
-
-function config_check {
-    # Check the configuration environment variables.
-
-    if [[ ! -e "$KAYOBE_CONFIG_SOURCE_PATH" ]]; then
-        if [[ ${KAYOBE_CONFIG_REQUIRED:-1} -eq 1 ]]; then
-            echo "Kayobe configuration path $KAYOBE_CONFIG_SOURCE_PATH does not exist"
-            return 1
-        fi
-    fi
-
-    if [[ ! -e "$KAYOBE_SOURCE_PATH" ]]; then
-        echo "Kayobe source path $KAYOBE_SOURCE_PATH does not exist"
-        return 1
-    fi
-}
-
-function config_init {
-    config_defaults
-    config_set
-    config_check
-}
-
-function environment_setup {
-    # NOTE: Virtualenv's activate script references an unbound variable.
-    set +u
-    source "${KAYOBE_VENV_PATH}/bin/activate"
-    set -u
-    source "${KAYOBE_CONFIG_SOURCE_PATH}/kayobe-env" "$@"
-}
-
 function write_bifrost_clouds_yaml {
     SEED_IP="192.168.33.5"
 
@@ -151,52 +26,34 @@ function write_bifrost_clouds_yaml {
     fi
 }
 
-function run_tenks_playbook {
+function run_TENKS_PLAYBOOK {
     # Run a Tenks playbook. Arguments:
     # $1: The path to the Tenks repo.
     # $2: The name of the playbook to run.
-    local tenks_path="$1"
-    local tenks_playbook="$2"
-    local tenks_deploy_type="${3:-default}"
+    local TENKS_PATH="$1"
+    local TENKS_PLAYBOOK="$2"
+    local TENKS_DEPLOY_TYPE="${3:-default}"
 
-    local parent="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-    if [[ ! -f "${KOLLA_CONFIG_PATH:-/etc/kolla}/admin-openrc.sh" &&
-              "${tenks_deploy_type}" = "compute" ]]; then
-
-        die $LINENO "Missing admin-openrc.sh & tenks_deploy_type is compute."
-        exit 1
-    fi
-    if [[ -f "${KOLLA_CONFIG_PATH:-/etc/kolla}/admin-openrc.sh" &&
-              ( "${tenks_deploy_type}" = "default" ||
-                    "${tenks_deploy_type}" = "compute" ) ]]; then
-
-        # Deploys Compute from Overcloud
-        default_tenks_config=tenks-deploy-config-compute.yml
-        source "${KOLLA_CONFIG_PATH:-/etc/kolla}/admin-openrc.sh"
-
-    elif [[ "${tenks_deploy_type}" = "default" ||
-               "${tenks_deploy_type}" = "overcloud" ]]; then
+    if [[ "${TENKS_DEPLOY_TYPE}" = "default" || # This is our base configuration
+               "${TENKS_DEPLOY_TYPE}" = "overcloud" ]]; then
 
         # Deploys Overcloud from Seed
-        default_tenks_config=tenks-deploy-config-overcloud.yml
+        #default_tenks_config=tenks-deploy-config-overcloud.yml
         write_bifrost_clouds_yaml
         export OS_CLOUD=bifrost
 
     else
-        die $LINENO "Bad tenks_deploy_type: ${tenks_deploy_type}"
+        die $LINENO "Bad TENKS_DEPLOY_TYPE: ${TENKS_DEPLOY_TYPE}"
         exit 1
     fi
 
-    # Allow a specific Tenks config file to be specified via
-    # $TENKS_CONFIG_PATH.
-    tenks_config="${TENKS_CONFIG_PATH:-$parent/$default_tenks_config}"
+    TENKS_CONFIG="$PARENT/tenks.yml"
 
     ansible-playbook \
         -vvv \
-        --inventory "$tenks_path/ansible/inventory" \
-        --extra-vars=@"$tenks_config" \
-        "$tenks_path/ansible/$tenks_playbook"
+        --inventory "$TENKS_PATH/ansible/inventory" \
+        --extra-vars=@"$TENKS_CONFIG" \
+        "$TENKS_PATH/ansible/$TENKS_PLAYBOOK"
 }
 
 function tenks_deploy {
@@ -204,8 +61,8 @@ function tenks_deploy {
     # Create a simple test Tenks deployment. Assumes that a bridge named
     # 'breth1' exists.  Arguments:
     # $1: The path to the Tenks repo.
-    local tenks_path="$1"
-    local tenks_deploy_type="${2:-default}"
+    local TENKS_PATH="$1"
+    local TENKS_DEPLOY_TYPE="${2:-default}"
 
     echo "Configuring Tenks"
 
@@ -214,19 +71,8 @@ function tenks_deploy {
     # We don't want to use the Kayobe venv.
     deactivate
 
-    # Install the Tenks venv.
-    #install_venv_system_site_packages "${TENKS_VENV_PATH}" "$tenks_path" -c "$UPPER_CONSTRAINTS_FILE"
-    #source ${TENKS_VENV_PATH:-$HOME/tenks-test-venv}/bin/activate
+    # Install a trivial script for ovs-vsctl that talks to containerised OpenvSwitch.
+    sudo cp --no-clobber "$PARENT/ovs-vsctl" /usr/bin/ovs-vsctl
 
-    #${KAYOBE_SOURCE_PATH}/tools/ansible-galaxy-retried.sh install \
-    #    --role-file="$tenks_path/requirements.yml" \
-    #    --roles-path="$tenks_path/ansible/roles/"
-
-    local parent="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-    # Install a trivial script for ovs-vsctl that talks to containerised Open
-    # vSwitch.
-    sudo cp --no-clobber "$parent/ovs-vsctl" /usr/bin/ovs-vsctl
-
-    run_tenks_playbook "$tenks_path" deploy.yml "$tenks_deploy_type"
+    run_TENKS_PLAYBOOK "$TENKS_PATH" deploy.yml "$TENKS_DEPLOY_TYPE"
 }
