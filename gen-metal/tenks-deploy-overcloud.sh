@@ -5,7 +5,7 @@ set -o pipefail
 
 # Necessay to call functions defined
 PARENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TENKS_PATH="root/my_test/tenks" # Hard coded shouldn't be tho
+TENKS_PATH="/root/my_test/tenks" # Hard coded shouldn't be tho
 SEED_IP="192.168.33.5"
 TENKS_CONFIG="$PARENT/tenks.yml"
 
@@ -58,8 +58,9 @@ function main {
     set -eu
     # Create a simple test Tenks deployment. Assumes that a bridge named
     # 'breth1' exists.  Arguments:
-    # $1: The path to the Tenks repo.
     echo "Configuring Tenks"
+
+    source /root/my_test/venvs/tenks/bin/activate # Activate env
 
     # Install a trivial script for ovs-vsctl that talks to containerised OpenvSwitch.
     sudo cp --no-clobber "$PARENT/ovs-vsctl" /usr/bin/ovs-vsctl

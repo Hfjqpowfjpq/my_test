@@ -6,7 +6,7 @@ localhost ansible_connection=local
 seed-hypervisor
 
 [seed]
-seed ansible_host=192.168.33.5
+seed0 ansible_host=192.168.33.5
 
 [controllers]
 #controller0
