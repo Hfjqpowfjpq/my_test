@@ -28,7 +28,7 @@ function write_bifrost_clouds_yaml {
     fi
 }
 
-function run_TENKS_PLAYBOOK {
+function run_tenks_playbook {
     # Run a Tenks playbook. Arguments:
     # $1: The path to the Tenks repo.
     # $2: The name of the playbook to run.
@@ -65,7 +65,7 @@ function main {
     # Install a trivial script for ovs-vsctl that talks to containerised OpenvSwitch.
     sudo cp --no-clobber "$PARENT/ovs-vsctl" /usr/bin/ovs-vsctl
 
-    run_TENKS_PLAYBOOK "$TENKS_PATH" deploy.yml overcloud
+    run_tenks_playbook "$TENKS_PATH" deploy.yml overcloud
 }
 
 main "$@"
