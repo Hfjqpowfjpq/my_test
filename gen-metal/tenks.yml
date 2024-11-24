@@ -1,6 +1,4 @@
 ---
-# This file holds the config given to Tenks when running `tenks-deploy.sh`. It
-# assumes the existence of the bridge `braio`.
 
 node_types:
   controller:
