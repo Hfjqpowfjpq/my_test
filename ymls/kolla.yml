@@ -312,7 +312,7 @@
 #kolla_enable_external_mariadb_load_balancer:
 #kolla_enable_fluentd:
 #kolla_enable_freezer:
-#kolla_enable_glance:
+kolla_enable_glance: true
 #kolla_enable_glance_horizon_policy_file:
 #kolla_enable_glance_image_cache:
 #kolla_enable_gnocchi:
@@ -320,17 +320,17 @@
 #kolla_enable_grafana:
 #kolla_enable_grafana_external:
 #kolla_enable_hacluster:
-#kolla_enable_haproxy:
+kolla_enable_haproxy: true
 #kolla_enable_haproxy_memcached:
 #kolla_enable_heat:
 #kolla_enable_heat_horizon_policy_file:
-#kolla_enable_horizon:
+kolla_enable_horizon: true
 #kolla_enable_horizon_blazar:
 #kolla_enable_horizon_cloudkitty:
 #kolla_enable_horizon_designate:
 #kolla_enable_horizon_freezer:
 #kolla_enable_horizon_heat:
-#kolla_enable_horizon_ironic:
+kolla_enable_horizon_ironic: true
 #kolla_enable_horizon_magnum:
 #kolla_enable_horizon_manila:
 #kolla_enable_horizon_masakari:
@@ -352,20 +352,20 @@
 #kolla_enable_ironic_pxe_uefi:
 #kolla_enable_iscsid:
 #kolla_enable_keepalived:
-#kolla_enable_keystone:
+kolla_enable_keystone: true
 #kolla_enable_keystone_federation:
 #kolla_enable_keystone_horizon_policy_file:
 #kolla_enable_kuryr:
 #kolla_enable_loadbalancer:
 #kolla_enable_magnum:
-#kolla_enable_manila:
+kolla_enable_manila: true
 #kolla_enable_manila_backend_cephfs_native:
 #kolla_enable_manila_backend_cephfs_nfs:
-#kolla_enable_manila_backend_generic:
+kolla_enable_manila_backend_generic: true
 #kolla_enable_manila_backend_glusterfs_nfs:
 #kolla_enable_manila_backend_hnas:
-#kolla_enable_mariabackup:
-#kolla_enable_mariadb:
+kolla_enable_mariabackup: true
+kolla_enable_mariadb: true
 #kolla_enable_masakari:
 #kolla_enable_masakari_hostmonitor:
 #kolla_enable_masakari_instancemonitor:
@@ -383,14 +383,14 @@
 #kolla_enable_neutron_mlnx:
 #kolla_enable_neutron_packet_logging:
 #kolla_enable_neutron_port_forwarding:
-#kolla_enable_neutron_provider_networks:
+kolla_enable_neutron_provider_networks: true
 #kolla_enable_neutron_qos:
 #kolla_enable_neutron_segments:
 #kolla_enable_neutron_sfc:
 #kolla_enable_neutron_sriov:
 #kolla_enable_neutron_trunk:
 #kolla_enable_neutron_vpnaas:
-#kolla_enable_nova:
+kolla_enable_nova: true
 #kolla_enable_nova_fake:
 #kolla_enable_nova_horizon_policy_file:
 #kolla_enable_nova_libvirt_container:
@@ -405,9 +405,10 @@
 #kolla_enable_openvswitch:
 #kolla_enable_osprofiler:
 #kolla_enable_outward_rabbitmq:
-#kolla_enable_ovn:
+kolla_enable_ovn: true
 #kolla_enable_ovs_dpdk:
-#kolla_enable_placement:
+neutron_ovn_dhcp_agent: yes
+kolla_enable_placement: true
 #kolla_enable_prometheus:
 #kolla_enable_prometheus_alertmanager:
 #kolla_enable_prometheus_alertmanager_external:
@@ -428,7 +429,7 @@
 #kolla_enable_prometheus_rabbitmq_exporter:
 #kolla_enable_prometheus_server:
 #kolla_enable_proxysql:
-#kolla_enable_rabbitmq:
+kolla_enable_rabbitmq: true
 #kolla_enable_redis:
 #kolla_enable_sahara:
 #kolla_enable_senlin:
