@@ -9,14 +9,14 @@ node_types:
     physical_networks:
       - physnet1
     console_log_enabled: true
-  compute:
-    memory_mb: 8192
-    vcpus: 4
-    volumes:
-      - capacity: 20GiB
-    physical_networks:
-      - physnet1
-    console_log_enabled: true
+  #compute:
+  #  memory_mb: 8192
+  #  vcpus: 4
+  #  volumes:
+  #    - capacity: 20GiB
+  #  physical_networks:
+  #    - physnet1
+  #  console_log_enabled: true
 
 specs:
   - type: controller
@@ -25,12 +25,12 @@ specs:
     ironic_config:
       resource_class: test-rc
       network_interface: noop
-  - type: compute
-    count: 1
-    node_name_prefix: compute
-    ironic_config:
-      resource_class: test-rc
-      network_interface: noop
+  #- type: compute
+  #  count: 1
+  #  node_name_prefix: compute
+  #  ironic_config:
+  #    resource_class: test-rc
+  #    network_interface: noop
 
 ipmi_address: 192.168.33.4
 
